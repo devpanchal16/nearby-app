@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEARBY* Marketplace</title>
+<style>
+:root{--lime:#eaff19;--bg:#090b09;--card:#151915;--muted:#a1a99f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:white;font-family:Arial}
+header{padding:18px 5%;display:flex;justify-content:space-between;align-items:center;background:#090b09;border-bottom:1px solid #333;position:sticky;top:0;z-index:5}
+.logo{font-size:26px;font-weight:900}.logo span{color:var(--lime)}
+main{max-width:1000px;margin:25px auto;padding:0 15px}
+button{border:0;padding:12px 17px;border-radius:7px;font-weight:bold;cursor:pointer;margin:4px}
+.primary{background:var(--lime);color:#090b09}
+.secondary{background:#303830;color:white}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#090c09;border:1px solid #444;color:white;border-radius:7px}
+label{font-size:13px;color:#ddd}
+.hero,.panel{padding:23px;background:var(--card);border:1px solid #343d34;border-radius:12px;margin:18px 0}
+.hero{background:linear-gradient(110deg,#27351d,#101510)}
+.hero h1{font-size:clamp(38px,8vw,65px);color:var(--lime);margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.product{background:#202720;border:1px solid #394139;border-radius:10px;overflow:hidden}
+.product img{width:100%;height:140px;object-fit:cover}
+.info{padding:13px}
+.price{color:var(--lime);font-size:20px;font-weight:bold}
+.small{color:var(--muted);font-size:12px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #394139}
+.badge{color:var(--lime);font-size:12px}
+.hidden{display:none!important}
+footer{text-align:center;padding:25px;color:#aaa}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">NEARBY<span>*</span></div>
+ <button class="primary" onclick="logout()">LOGOUT</button>
+</header>
+
+<main>
+
+<section id="welcome">
+ <div class="hero">
+  <p>YOUR NEIGHBOURHOOD MARKETPLACE</p>
+  <h1>SHOP LOCAL.<br>SUPPORT REAL.</h1>
+  <p>Local shops se shopping karo. Delivery hamari zimmedari.</p>
+  <h3>0% Commission at Launch</h3>
+  <button class="primary" onclick="show('register')">GET STARTED ↗</button>
+  <button class="secondary" onclick="show('login')">LOGIN</button>
+ </div>
+ <div class="panel">
+  <h3>Demo Accounts</h3>
+  Customer: 333 / 123<br>
+  Shop Owner: 111 / 123<br>
+  Delivery Boy: 222 / 123
+ </div>
+</section>
+
+<section id="register" class="panel hidden">
+ <h2>Create Account</h2>
+ <label>Account Type</label>
+ <select id="role" onchange="roleFields()">
+  <option value="customer">Customer</option>
+  <option value="owner">Shop Owner</option>
+  <option value="rider">Delivery Boy</option>
+ </select>
+ <div id="extra"></div>
+ <label>Name</label><input id="name">
+ <label>Mobile</label><input id="phone">
+ <label>Password</label><input id="password" type="password">
+ <button class="primary" onclick="register()">REGISTER</button>
+ <button class="secondary" onclick="show('login')">LOGIN</button>
+</section>
+
+<section id="login" class="panel hidden">
+ <h2>Login</h2>
+ <label>Mobile Number</label><input id="loginPhone">
+ <label>Password</label><input id="loginPassword" type="password">
+ <button class="primary" onclick="login()">LOGIN NOW</button>
+</section>
+
+<section id="customer" class="hidden">
+ <div class="hero">
+  <h1>FIND YOUR<br>LOCAL STORE.</h1>
+  <p>Welcome, <span id="customerName"></span></p>
+ </div>
+ <div class="panel">
+  <h2>Available Products</h2>
+  <input id="search" placeholder="Search products..." oninput="renderProducts()">
+  <div id="products" class="grid"></div>
+ </div>
+ <div class="panel">
+  <h2>🛒 My Cart</h2>
+  <div id="cart"></div>
+  <button class="primary" onclick="checkout()">CHECKOUT</button>
+ </div>
+ <div class="panel hidden" id="checkoutBox">
+  <h2>Checkout</h2>
+  <label>Customer Name</label><input id="buyerName">
+  <label>Mobile</label><input id="buyerPhone">
+  <label>Delivery Address</label><textarea id="buyerAddress"></textarea>
+  <label>Payment Method</label>
+  <select><option>Cash on Delivery (COD)</option></select>
+  <h3 id="total"></h3>
+  <button class="primary" onclick="placeOrder()">PLACE ORDER</button>
+ </div>
+ <div class="panel" id="myOrdersSection">
+  <h2>📦 My Orders</h2>
+  <div id="myOrders"></div>
+ </div>
+</section>
+
+<section id="owner" class="hidden">
+ <div class="hero"><h1>MY SHOP.</h1><p>Welcome Shop Owner</p></div>
+ <div class="panel">
+  <h2>Add Product</h2>
+  <label>Product Photo</label><input id="photo" type="file" accept="image/*">
+  <label>Product Name</label><input id="pname">
+  <label>Price ₹</label><input id="pprice" type="number">
+  <label>Stock</label><input id="stock" type="number">
+  <button class="primary" onclick="addProduct()">ADD PRODUCT</button>
+ </div>
+ <div class="panel">
+  <h2>My Products</h2>
+  <div id="myProducts" class="grid"></div>
+ </div>
+ <div class="panel">
+  <h2>📥 Incoming Orders</h2>
+  <p class="small">Customer orders will appear here.</p>
+  <div id="ownerOrders"></div>
+ </div>
+</section>
+
+<section id="rider" class="hidden">
+ <div class="hero">
+  <h1>DELIVERY<br>PARTNER.</h1>
+  <p>Welcome Delivery Partner</p>
+ </div>
+ <div class="panel">
+  <h2>Availability</h2>
+  <button class="primary" onclick="setOnline(true)">GO ONLINE</button>
+  <button class="secondary" onclick="setOnline(false)">GO OFFLINE</button>
+  <p id="onlineStatus"></p>
+ </div>
+ <div class="panel">
+  <h2>🚴 My Assigned Orders</h2>
+  <div id="riderOrders"></div>
+ </div>
+</section>
+
+</main>
+<footer>NEARBY* — SHOP LOCAL. SUPPORT REAL.</footer>
+
+<script>
+const get=(k,d=[])=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d));
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let user=get("nbUser",null),cart=[];
+
+const initialUsers=[
+ {name:"Demo Customer",phone:"333",password:"123",role:"customer",address:"Demo Address"},
+ {name:"Demo Shop Owner",phone:"111",password:"123",role:"owner",shop:"Demo Kirana Store",lat:29.39,lon:76.96},
+ {name:"Demo Delivery Boy",phone:"222",password:"123",role:"rider",online:true,lat:29.39,lon:76.96}
+];
+
+const initialProducts=[
+ {id:1,name:"Aashirvaad Atta 5kg",price:250,stock:20,shop:"Demo Kirana Store",owner:"111",image:"https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500"},
+ {id:2,name:"Amul Milk 1L",price:65,stock:30,shop:"Demo Kirana Store",owner:"111",image:"https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500"},
+ {id:3,name:"Rice 1kg",price:80,stock:25,shop:"Demo Kirana Store",owner:"111",image:"https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500"},
+ {id:4,name:"Sugar 1kg",price:48,stock:40,shop:"Demo Kirana Store",owner:"111",image:"https://images.unsplash.com/photo-1581441363689-1f3c3c414635?w=500"}
+];
+
+if(!localStorage.getItem("nbUsers"))save("nbUsers",initialUsers);
+if(!localStorage.getItem("nbProducts"))save("nbProducts",initialProducts);
+
+function esc(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function show(id){
+ ["welcome","register","login","customer","owner","rider"].forEach(x=>
+ document.getElementById(x).classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+}
+
+function roleFields(){
+ let r=document.getElementById("role").value;
+ document.getElementById("extra").innerHTML=
+ r==="owner"?'<label>Shop Name</label><input id="shopName"><label>Shop Address</label><input id="shopAddress">':
+ r==="rider"?'<label>Vehicle</label><select id="vehicle"><option>Bike</option><option>Cycle</option><option>Scooter</option></select><label>Area</label><input id="area">':
+ '<label>Home Address</label><input id="homeAddress">';
+}
+roleFields();
+
+function register(){
+ let role=document.getElementById("role").value;
+ let name=document.getElementById("name").value.trim();
+ let phone=document.getElementById("phone").value.trim();
+ let password=document.getElementById("password").value;
+ if(!name||!phone||!password)return alert("Fill all details.");
+ let users=get("nbUsers");
+ if(users.some(x=>x.phone===phone))return alert("Mobile already registered.");
+ let u={name,phone,password,role,online:false,lat:29.39,lon:76.96};
+ if(role==="owner"){
+  u.shop=document.getElementById("shopName").value.trim();
+  u.address=document.getElementById("shopAddress").value;
+  if(!u.shop)return alert("Enter shop name.");
+ }
+ if(role==="rider"){
+  u.vehicle=document.getElementById("vehicle").value;
+  u.area=document.getElementById("area").value;
+ }
+ if(role==="customer")u.address=document.getElementById("homeAddress").value;
+ users.push(u);save("nbUsers",users);
+ user=u;save("nbUser",u);dashboard();
+}
+
+function login(){
+ let phone=document.getElementById("loginPhone").value.trim();
+ let pass=document.getElementById("loginPassword").value;
+ let u=get("nbUsers").find(x=>x.phone===phone&&x.password===pass);
+ if(!u)return alert("Invalid login details.");
+ user=u;save("nbUser",u);dashboard();
+}
+
+function logout(){
+ user=null;cart=[];save("nbUser",null);show("welcome");
+}
+
+function dashboard(){
+ if(!user)return show("welcome");
+ show(user.role);
+ if(user.role==="customer"){
+  document.getElementById("customerName").textContent=user.name;
+  document.getElementById("buyerName").value=user.name;
+  document.getElementById("buyerPhone").value=user.phone;
+  document.getElementById("buyerAddress").value=user.address||"";
+ }
+ refresh();
+}
+
+function refresh(){
+ if(!user)return;
+ if(user.role==="customer"){
+  renderProducts();renderCart();renderMyOrders();
+ }
+ if(user.role==="owner"){
+  renderMyProducts();renderOwnerOrders();
+ }
+ if(user.role==="rider"){
+  renderRiderOrders();
+  let current=get("nbUsers").find(x=>x.phone===user.phone);
+  document.getElementById("onlineStatus").textContent=current?.online?"You are ONLINE":"You are OFFLINE";
+ }
+}
+
+function renderProducts(){
+ let q=(document.getElementById("search")?.value||"").toLowerCase();
+ let p=get("nbProducts").filter(x=>x.name.toLowerCase().includes(q)&&x.stock>0);
+ document.getElementById("products").innerHTML=p.map(x=>`
+ <div class="product">
+ <img src="${x.image}">
+ <div class="info">
+ <h3>${esc(x.name)}</h3>
+ <p class="small">${esc(x.shop)} · Stock ${x.stock}</p>
+ <p class="price">₹${x.price}</p>
+ <button class="primary" onclick="addCart(${x.id})">ADD TO CART</button>
+ </div></div>`).join("")||"No products available.";
+}
+
+function addCart(id){
+ let p=get("nbProducts").find(x=>x.id===id);
+ if(!p||p.stock<1)return alert("Out of stock.");
+ if(cart.length&&cart[0].owner!==p.owner)return alert("Please order from one shop at a time.");
+ let old=cart.find(x=>x.id===id);
+ if(old)old.qty++;
+ else cart.push({...p,qty:1});
+ renderCart();
+}
+
+function renderCart(){
+ document.getElementById("cart").innerHTML=cart.map(x=>
+ `<div class="row">${esc(x.name)} × ${x.qty}<b>₹${x.price*x.qty}</b>
+ <button onclick="removeCart(${x.id})">REMOVE</button></div>`).join("")||"Cart is empty.";
+}
+
+function removeCart(id){cart=cart.filter(x=>x.id!==id);renderCart();}
+
+function checkout(){
+ if(!cart.length)return alert("Add products first.");
+ document.getElementById("checkoutBox").classList.remove("hidden");
+ document.getElementById("total").textContent="Total: ₹"+
+ (cart.reduce((a,x)=>a+x.price*x.qty,0)+25)+" including delivery.";
+}
+
+function distance(a,b){
+ const rad=x=>x*Math.PI/180;
+ let d1=rad(a.lat-b.lat),d2=rad(a.lon-b.lon);
+ let v=Math.sin(d1/2)**2+
+ Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(d2/2)**2;
+ return 6371*2*Math.atan2(Math.sqrt(v),Math.sqrt(1-v));
+}
+
+function placeOrder(){
+ let name=document.getElementById("buyerName").value.trim();
+ let phone=document.getElementById("buyerPhone").value.trim();
+ let address=document.getElementById("buyerAddress").value.trim();
+ if(!name||!phone||!address)return alert("Enter delivery details.");
+ if(!cart.length)return alert("Cart is empty.");
+
+ let products=get("nbProducts");
+ for(let c of cart){
+  let p=products.find(x=>x.id===c.id);
+  if(!p||p.stock<c.qty)return alert(c.name+" out of stock.");
+ }
+ cart.forEach(c=>{
+  products.find(p=>p.id===c.id).stock-=c.qty;
+ });
+ save("nbProducts",products);
+
+ let total=cart.reduce((a,x)=>a+x.price*x.qty,0)+25;
+ let order={
+  id:"NB"+Date.now().toString().slice(-7),
+  customer:name,phone,address,
+  items:cart.map(x=>({name:x.name,price:x.price,qty:x.qty})),
+  total,payment:"Cash on Delivery",
+  owner:cart[0].owner,shop:cart[0].shop,
+  status:"New",rider:null,
+  created:new Date().toLocaleString()
+ };
+ let orders=get("nbOrders");
+ orders.push(order);
+ save("nbOrders",orders);
+
+ cart=[];
+ renderCart();
+ document.getElementById("checkoutBox").classList.add("hidden");
+ refresh();
+
+ document.getElementById("myOrdersSection").scrollIntoView({behavior:"smooth"});
+ alert("Order placed successfully! ID: "+order.id);
+}
+
+function renderMyOrders(){
+ let orders=get("nbOrders").filter(x=>x.phone===user.phone);
+ document.getElementById("myOrders").innerHTML=orders.map(o=>`
+ <div class="panel">
+ <div class="row"><b>${o.id}</b><span class="badge">${esc(o.status)}</span></div>
+ <p>Shop: ${esc(o.shop)}</p>
+ <p>${o.items.map(x=>esc(x.name)+" × "+x.qty).join("<br>")}</p>
+ <p>Address: ${esc(o.address)}</p>
+ <p>Payment: COD</p>
+ <h3>₹${o.total}</h3>
+ <p class="small">Delivery Partner: ${o.rider?"Assigned":"Waiting for shop acceptance"}</p>
+ </div>`).join("")||"No orders yet.";
+}
+
+function addProduct(){
+ let name=document.getElementById("pname").value.trim();
+ let price=Number(document.getElementById("pprice").value);
+ let stock=Number(document.getElementById("stock").value);
+ let file=document.getElementById("photo").files[0];
+ if(!name||price<=0||stock<0)return alert("Enter valid product details.");
+
+ const finish=image=>{
+  let p=get("nbProducts");
+  p.push({id:Date.now(),name,price,stock,image,shop:user.shop,owner:user.phone});
+  save("nbProducts",p);
+  alert("Product added successfully!");
+  ["pname","pprice","stock","photo"].forEach(id=>document.getElementById(id).value="");
+  renderMyProducts();
+ };
+ if(file){
+  let reader=new FileReader();
+  reader.onload=e=>finish(e.target.result);
+  reader.readAsDataURL(file);
+ }else finish("https://images.unsplash.com/photo-1542838132-92c53300491e?w=500");
+}
+
+function renderMyProducts(){
+ let p=get("nbProducts").filter(x=>x.owner===user.phone);
+ document.getElementById("myProducts").innerHTML=p.map(x=>`
+ <div class="product"><img src="${x.image}"><div class="info">
+ <h3>${esc(x.name)}</h3><p class="price">₹${x.price}</p>
+ Stock: ${x.stock}</div></div>`).join("")||"No products added.";
+}
+
+function renderOwnerOrders(){
+ let orders=get("nbOrders").filter(o=>o.owner===user.phone);
+ document.getElementById("ownerOrders").innerHTML=orders.map(o=>`
+ <div class="panel">
+ <div class="row"><b>Order ${o.id}</b><span class="badge">${esc(o.status)}</span></div>
+ <p>Customer: ${esc(o.customer)}</p>
+ <p>Phone: ${esc(o.phone)}</p>
+ <p>Address: ${esc(o.address)}</p>
+ <p>Products: ${o.items.map(x=>esc(x.name)+" × "+x.qty).join(", ")}</p>
+ <h3>₹${o.total} · COD</h3>
+ ${o.status==="New"?`
+ <button class="primary" onclick="acceptOrder('${o.id}')">ACCEPT ORDER</button>
+ <button class="secondary" onclick="updateOrder('${o.id}','Rejected')">REJECT</button>`:""}
+ </div>`).join("")||"No incoming orders.";
+}
+
+function acceptOrder(id){
+ let orders=get("nbOrders");
+ let o=orders.find(x=>x.id===id);
+ if(!o)return;
+ if(o.status!=="New")return;
+
+ let users=get("nbUsers");
+ let riders=users.filter(x=>x.role==="rider"&&x.online);
+ if(!riders.length){
+  alert("No delivery partner is online. Order accepted; rider is pending.");
+  o.status="Accepted - Rider Pending";
+  save("nbOrders",orders);refresh();return;
+ }
+
+ // Assign the nearest available rider only after shop acceptance.
+ // Demo coordinates are used; live GPS requires a backend.
+ riders.sort((a,b)=>distance(
+  {lat:29.39,lon:76.96},a
+ )-distance({lat:29.39,lon:76.96},b));
+
+ o.status="Accepted";
+ o.rider=riders[0].phone;
+ o.riderStatus="Assigned";
+ save("nbOrders",orders);
+ alert("Order accepted! Assigned to delivery partner: "+riders[0].name);
+ refresh();
+}
+
+function updateOrder(id,status){
+ let orders=get("nbOrders");
+ let o=orders.find(x=>x.id===id);
+ if(!o)return;
+ o.status=status;
+ save("nbOrders",orders);
+ refresh();
+}
+
+function setOnline(v){
+ let users=get("nbUsers");
+ let u=users.find(x=>x.phone===user.phone);
+ u.online=v;
+ user=u;
+ save("nbUsers",users);
+ save("nbUser",user);
+ refresh();
+ alert(v?"You are now ONLINE":"You are now OFFLINE");
+}
+
+function renderRiderOrders(){
+ let orders=get("nbOrders").filter(o=>
+  o.rider===user.phone&&
+  ["Accepted","Picked Up"].includes(o.status)
+ );
+ document.getElementById("riderOrders").innerHTML=orders.map(o=>`
+ <div class="panel">
+ <div class="row"><b>Delivery ${o.id}</b><span class="badge">${o.status}</span></div>
+ <p>Customer: ${esc(o.customer)}</p>
+ <p>Phone: ${esc(o.phone)}</p>
+ <p>Address: ${esc(o.address)}</p>
+ <p>Shop: ${esc(o.shop)}</p>
+ <p>Products: ${o.items.map(x=>esc(x.name)+" × "+x.qty).join(", ")}</p>
+ <h3>₹${o.total} · COD</h3>
+ ${o.status==="Accepted"?`
+ <button class="primary" onclick="updateOrder('${o.id}','Picked Up')">ORDER PICKED UP</button>`:""}
+ ${o.status==="Picked Up"?`
+ <button class="primary" onclick="updateOrder('${o.id}','Delivered')">DELIVERED / CASH COLLECTED</button>`:""}
+ </div>`).join("")||"No assigned deliveries yet.";
+}
+
+// Demo refresh button can be used after switching accounts.
+if(user)dashboard();
+</script>
+</body>
+</html>
