@@ -3,617 +3,448 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEARBY* Local Marketplace</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEARBY — Local Shopping</title>
 <style>
-:root {
- --lime:#eaff19;
- --bg:#090b09;
- --card:#151915;
- --muted:#a1a99f;
-}
+:root{--bg:#080b09;--panel:#111713;--lime:#c5ff39;--muted:#9aa69b;--line:#263128}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
-header{padding:18px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #303530;position:sticky;top:0;background:#090b09;z-index:5}
-.logo{font-size:25px;font-weight:900}
-.logo span{color:var(--lime)}
-button{cursor:pointer;border:0;padding:12px 17px;border-radius:7px;font-weight:bold}
-.primary{background:var(--lime);color:#080a08}
-.secondary{background:#303830;color:white}
-.danger{background:#a93232;color:white}
-input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#090c09;border:1px solid #444;color:white;border-radius:7px}
-label{font-size:13px;color:#ddd}
+body{margin:0;background:var(--bg);color:#f4f8f3;font-family:Arial,sans-serif}
+header{padding:18px 5%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px;color:var(--lime)}
 main{max-width:1050px;margin:25px auto;padding:0 16px}
-.hero{padding:40px 25px;background:linear-gradient(110deg,#24301c,#101510);border:1px solid #3b4434;border-radius:15px}
-.hero h1{font-size:clamp(40px,8vw,75px);margin:10px 0;color:var(--lime)}
-.hero p{color:#c3c9bf;line-height:1.6}
-.panel{background:var(--card);padding:20px;border:1px solid #303830;border-radius:12px;margin:20px 0}
-h2{margin-top:0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px}
-.product{background:#1d241e;border:1px solid #343d34;border-radius:10px;overflow:hidden}
-.product img{width:100%;height:150px;object-fit:cover}
-.info{padding:13px}
-.price{color:var(--lime);font-size:20px;font-weight:bold;margin:12px 0}
-.small{color:var(--muted);font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
+h2,h3{margin-top:5px}
+input,select,button{width:100%;padding:12px;margin:7px 0;border-radius:9px;border:1px solid var(--line);background:#080e0a;color:white;font-size:15px}
+button{background:var(--lime);color:#10150c;font-weight:bold;border:0;cursor:pointer}
+button.secondary{background:#273329;color:white}
+button.danger{background:#692d2d;color:white}
+button:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.product img{width:100%;height:150px;object-fit:cover;border-radius:10px;background:#202820}
+small,.muted{color:var(--muted)}
 .hidden{display:none!important}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #343d34;flex-wrap:wrap}
-.badge{color:var(--lime);font-size:12px}
-footer{text-align:center;padding:30px;color:#929b91}
-a{color:var(--lime)}
-#notice{padding:10px;color:var(--lime);white-space:pre-wrap}
-.status{display:inline-block;background:#303830;color:var(--lime);padding:6px 10px;border-radius:20px;font-size:12px}
+.tag{display:inline-block;padding:5px 9px;border-radius:20px;background:#263329;color:var(--lime);font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+#message{padding:10px;color:var(--lime)}
 </style>
 </head>
-
 <body>
 <header>
- <div class="logo">NEARBY<span>*</span></div>
- <div class="row" style="border:0">
-  <span id="accountLabel" class="small">Welcome</span>
-  <button id="logoutBtn" class="secondary hidden">Logout</button>
- </div>
+  <div class="logo">NEARBY*</div>
+  <div id="accountArea" class="muted">Not logged in</div>
 </header>
 
 <main>
-<div id="notice"></div>
+  <div id="message"></div>
 
-<section id="welcome">
- <div class="hero">
-  <p>✳ YOUR NEIGHBOURHOOD MARKETPLACE</p>
-  <h1>SHOP LOCAL.<br>SUPPORT REAL.</h1>
-  <p>Local shops se shopping karo. Delivery hamari zimmedari.</p>
-  <p>0% commission at launch.</p>
-  <button class="primary" onclick="showPage('register')">GET STARTED ↗</button>
-  <button class="secondary" onclick="showPage('login')">LOGIN</button>
- </div>
-</section>
+  <section id="authPanel" class="card">
+    <h2>Welcome to NEARBY</h2>
+    <p class="muted">Local shops. Easy delivery.</p>
+    <div class="row">
+      <button id="loginTab">Login</button>
+      <button id="signupTab" class="secondary">Create Account</button>
+    </div>
+    <form id="authForm">
+      <input id="name" placeholder="Your name" class="hidden">
+      <input id="mobile" placeholder="Mobile number" inputmode="numeric" required>
+      <input id="password" type="password" placeholder="Password (minimum 6 characters)" required>
+      <select id="role" class="hidden">
+        <option value="customer">Customer</option>
+        <option value="owner">Shop Owner</option>
+        <option value="rider">Delivery Boy</option>
+      </select>
+      <input id="shopName" placeholder="Shop name (for Shop Owner)" class="hidden">
+      <button id="authSubmit" type="submit">Login</button>
+    </form>
+    <small>Demo note: Mobile number se login hoga. Password Firebase Authentication mein securely handle hota hai.</small>
+  </section>
 
-<section id="register" class="hidden panel">
- <h2>Create Account</h2>
- <label>Account Type</label>
- <select id="role" onchange="roleFields()">
-  <option value="customer">Customer</option>
-  <option value="owner">Shop Owner</option>
-  <option value="rider">Delivery Boy</option>
- </select>
- <div id="extraFields"></div>
- <label>Full Name</label>
- <input id="regName" placeholder="Your full name">
- <label>Mobile Number</label>
- <input id="regPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number">
- <label>Password</label>
- <input id="regPassword" type="password" placeholder="Minimum 6 characters">
- <button class="primary" onclick="register()">REGISTER NOW</button>
- <p class="small">Already registered? <a href="#" onclick="showPage('login')">Login</a></p>
-</section>
+  <section id="appPanel" class="hidden">
+    <div class="card row">
+      <div><h2 id="welcome"></h2><span id="roleTag" class="tag"></span></div>
+      <button id="logout" class="secondary">Logout</button>
+    </div>
 
-<section id="login" class="hidden panel">
- <h2>Login to NEARBY</h2>
- <label>Mobile Number</label>
- <input id="loginPhone" type="tel" inputmode="numeric" placeholder="Registered mobile number">
- <label>Password</label>
- <input id="loginPassword" type="password" placeholder="Password">
- <button class="primary" onclick="login()">LOGIN</button>
- <p class="small">New here? <a href="#" onclick="showPage('register')">Create account</a></p>
-</section>
+    <section id="customerPanel" class="hidden">
+      <div class="card">
+        <h2>Shop Products</h2>
+        <div id="products" class="grid">Loading products...</div>
+      </div>
+      <div class="card">
+        <h2>My Cart</h2>
+        <div id="cartItems">Your cart is empty.</div>
+        <h3 id="cartTotal">Total: ₹0</h3>
+        <input id="customerAddress" placeholder="Delivery address">
+        <button id="placeOrder">Place Order — Cash on Delivery</button>
+      </div>
+      <div class="card">
+        <h2>My Orders</h2>
+        <div id="customerOrders">Loading orders...</div>
+      </div>
+    </section>
 
-<section id="customer" class="hidden">
- <div class="hero">
-  <p>WELCOME TO NEARBY</p>
-  <h1>FIND YOUR<br>LOCAL STORE.</h1>
-  <p>Shop from neighbourhood businesses.</p>
- </div>
+    <section id="ownerPanel" class="hidden">
+      <div class="card">
+        <h2>Add Product</h2>
+        <input id="pName" placeholder="Product name">
+        <div class="row">
+          <input id="pPrice" type="number" min="1" placeholder="Price ₹">
+          <input id="pStock" type="number" min="0" placeholder="Stock">
+        </div>
+        <input id="pPhoto" type="file" accept="image/*">
+        <button id="addProduct">Add Product</button>
+      </div>
+      <div class="card">
+        <h2>My Products</h2>
+        <div id="ownerProducts"></div>
+      </div>
+      <div class="card">
+        <h2>Incoming Orders</h2>
+        <div id="ownerOrders">Loading orders...</div>
+      </div>
+    </section>
 
- <div class="panel">
-  <h2>Search Products</h2>
-  <input id="search" placeholder="Search products..." oninput="renderProducts()">
-  <div id="products" class="grid">Loading products...</div>
- </div>
-
- <div class="panel">
-  <h2>Your Cart 🛒</h2>
-  <div id="cart"></div>
-  <h3 id="cartTotal"></h3>
-  <button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button>
- </div>
-
- <div id="checkoutBox" class="panel hidden">
-  <h2>Checkout</h2>
-  <label>Customer Name</label>
-  <input id="buyerName">
-  <label>Mobile</label>
-  <input id="buyerPhone">
-  <label>Delivery Address</label>
-  <textarea id="buyerAddress"></textarea>
-  <label>Payment Method</label>
-  <select id="payment"><option value="COD">Cash on Delivery (COD)</option></select>
-  <h3 id="finalTotal"></h3>
-  <button class="primary" onclick="placeOrder()">PLACE ORDER – COD</button>
- </div>
-
- <div class="panel">
-  <h2>My Orders</h2>
-  <div id="myOrders">Loading...</div>
- </div>
-</section>
-
-<section id="owner" class="hidden">
- <div class="hero">
-  <h1>MY SHOP.</h1>
-  <p>Manage your local business.</p>
- </div>
-
- <div class="panel">
-  <h2>Add New Product</h2>
-  <label>Product Photo</label>
-  <input type="file" id="photo" accept="image/*">
-  <label>Product Name</label>
-  <input id="pname" placeholder="Product name">
-  <label>Price ₹</label>
-  <input id="pprice" type="number" min="1" placeholder="Price">
-  <label>Stock Quantity</label>
-  <input id="stock" type="number" min="0" placeholder="Stock">
-  <button class="primary" onclick="addProduct()">ADD PRODUCT</button>
- </div>
-
- <div class="panel">
-  <h2>My Products</h2>
-  <div id="myProducts" class="grid"></div>
- </div>
-
- <div class="panel">
-  <h2>Incoming Orders</h2>
-  <div id="ownerOrders"></div>
- </div>
-</section>
-
-<section id="rider" class="hidden">
- <div class="hero">
-  <h1>DELIVERY<br>PARTNER.</h1>
-  <p>Deliver nearby. Earn locally.</p>
- </div>
- <div class="panel">
-  <h2>Delivery Partner Dashboard</h2>
-  <p id="onlineStatus" class="status">Offline</p>
-  <button class="primary" onclick="setOnline(true)">GO ONLINE</button>
-  <button class="secondary" onclick="setOnline(false)">GO OFFLINE</button>
-  <p class="small">Allow location access for nearest-rider demo assignment.</p>
- </div>
- <div class="panel">
-  <h2>My Delivery Tasks</h2>
-  <div id="riderOrders"></div>
- </div>
-</section>
+    <section id="riderPanel" class="hidden">
+      <div class="card">
+        <h2>Delivery Partner Dashboard</h2>
+        <p id="availabilityText">Availability: Offline</p>
+        <button id="availabilityBtn">Go Online</button>
+        <small>Online hone par shop owners tumhe delivery assign kar sakenge.</small>
+      </div>
+      <div class="card">
+        <h2>My Assigned Orders</h2>
+        <div id="riderOrders">Loading orders...</div>
+      </div>
+    </section>
+  </section>
 </main>
 
-<footer>NEARBY* — SHOP LOCAL. SUPPORT REAL.</footer>
-
 <script type="module">
-import {initializeApp} from
- "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
 import {
- getAuth,createUserWithEmailAndPassword,
- signInWithEmailAndPassword,onAuthStateChanged,signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  getAuth, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
 import {
- getFirestore,collection,doc,setDoc,addDoc,
- getDoc,getDocs,updateDoc,deleteDoc,query,where,
- onSnapshot,serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  getFirestore, collection, doc, setDoc, getDoc, addDoc,
+  getDocs, query, where, onSnapshot, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 import {
- getStorage,ref,uploadBytes,getDownloadURL
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+  getStorage, ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-storage.js";
 
-/* YOUR FIREBASE CONFIGURATION */
-const firebaseConfig={
- apiKey:"AIzaSyAsscO56nC7incprl636SYaD6d4FfqGRZo",
- authDomain:"nearby-47be1.firebaseapp.com",
- projectId:"nearby-47be1",
- storageBucket:"nearby-47be1.firebasestorage.app",
- messagingSenderId:"334191282705",
- appId:"1:334191282705:web:3f77408a45b12065963fb0"
+/* 1. Replace this with your Firebase project config */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-const storage=getStorage(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-let user=null,profile=null,cart=[];
-let productsCache=[],ordersCache=[];
-let stops=[];
-let riderOnline=false;
-let customerLocation=null;
+let currentUser = null;
+let profile = null;
+let authMode = "login";
+let cart = [];
+let stopListeners = [];
+let isOnline = false;
 
-const $=id=>document.getElementById(id);
-const msg=t=>$("notice").textContent=t;
-const money=n=>"₹"+Number(n||0).toFixed(2);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
-const phoneEmail=p=>p.replace(/\D/g,"")+"@nearby.app";
-const total=()=>cart.reduce((s,p)=>s+p.price*p.qty,0)+25;
+const $ = id => document.getElementById(id);
+const show = (id, yes=true) => $(id).classList.toggle("hidden", !yes);
+const say = msg => $("message").textContent = msg;
+const money = n => "₹" + Number(n || 0).toFixed(2);
+const safe = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mobileEmail = m => m.replace(/\D/g,"") + "@nearby.app";
+const total = () => cart.reduce((s,p)=>s + p.price*p.qty,0);
 
 function clearListeners(){
- stops.forEach(fn=>fn());
- stops=[];
+  stopListeners.forEach(fn=>fn());
+  stopListeners=[];
 }
-function watch(q,callback){
- const stop=onSnapshot(q,snap=>callback(snap),err=>msg("Firebase error: "+err.message));
- stops.push(stop);
+function listen(q, callback){
+  const stop=onSnapshot(q, callback, err=>say("Database error: "+err.message));
+  stopListeners.push(stop);
 }
-function showPage(id){
- ["welcome","register","login","customer","owner","rider"].forEach(x=>$(x).classList.add("hidden"));
- $(id).classList.remove("hidden");
-}
-function roleFields(){
- const r=$("role").value;
- $("extraFields").innerHTML=
- r==="owner"?`
- <label>Shop Name</label><input id="shopName" placeholder="Your shop name">
- <label>Shop Address</label><input id="shopAddress" placeholder="Shop address">`:
- r==="rider"?`
- <label>Vehicle</label><select id="vehicle"><option>Bike</option><option>Scooter</option><option>Cycle</option></select>
- <label>Area</label><input id="area" placeholder="Your delivery area">`:
- `<label>Home Address</label><input id="homeAddress" placeholder="Home address">`;
-}
-roleFields();
-
-function getLocation(){
- return new Promise(resolve=>{
-  if(!navigator.geolocation)return resolve(null);
-  navigator.geolocation.getCurrentPosition(
-   p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude}),
-   ()=>resolve(null),{enableHighAccuracy:true,timeout:8000}
-  );
- });
+function showPanel(role){
+  show("authPanel",false);
+  show("appPanel",true);
+  show("customerPanel",role==="customer");
+  show("ownerPanel",role==="owner");
+  show("riderPanel",role==="rider");
+  $("welcome").textContent="Hello, "+(profile.name || "User");
+  $("roleTag").textContent=role.toUpperCase();
+  $("accountArea").textContent=profile.name || "Account";
 }
 
-window.register=async()=>{
- try{
-  const role=$("role").value;
-  const name=$("regName").value.trim();
-  const phone=$("regPhone").value.trim();
-  const password=$("regPassword").value;
-  if(!name||phone.replace(/\D/g,"").length<10||password.length<6)
-   throw Error("Enter name, valid mobile number and password (6+ characters).");
+$("loginTab").onclick=()=>{
+  authMode="login";
+  $("authSubmit").textContent="Login";
+  show("name",false);show("role",false);show("shopName",false);
+};
+$("signupTab").onclick=()=>{
+  authMode="signup";
+  $("authSubmit").textContent="Create Account";
+  show("name",true);show("role",true);
+};
+$("authForm").onsubmit=async e=>{
+  e.preventDefault();
+  try{
+    const mobile=$("mobile").value.trim();
+    const password=$("password").value;
+    if(mobile.replace(/\D/g,"").length<10) throw Error("Valid mobile number enter karo.");
+    const email=mobileEmail(mobile);
 
-  const location=await getLocation();
-  const cred=await createUserWithEmailAndPassword(auth,phoneEmail(phone),password);
-  const uid=cred.user.uid;
-
-  const data={
-   uid,name,phone,role,
-   location:location,
-   createdAt:serverTimestamp()
-  };
-
-  if(role==="owner"){
-   data.shop=$("shopName").value.trim();
-   data.shopAddress=$("shopAddress").value.trim();
-   if(!data.shop)throw Error("Enter shop name.");
-  }
-  if(role==="rider"){
-   data.vehicle=$("vehicle").value;
-   data.area=$("area").value.trim();
-  }
-  if(role==="customer")data.address=$("homeAddress").value.trim();
-
-  await setDoc(doc(db,"users",uid),data);
-
-  if(role==="owner"){
-   await setDoc(doc(db,"shops",uid),{
-    ownerId:uid,shopName:data.shop,
-    address:data.shopAddress,location,
-    createdAt:serverTimestamp()
-   });
-  }
-
-  if(role==="rider"){
-   await setDoc(doc(db,"riders",uid),{
-    uid,name,online:false,location,
-    updatedAt:serverTimestamp()
-   });
-  }
-
-  msg("Account created successfully!");
- }catch(e){msg(e.message);}
+    if(authMode==="signup"){
+      const name=$("name").value.trim();
+      const role=$("role").value;
+      if(!name) throw Error("Name enter karo.");
+      if(password.length<6) throw Error("Password minimum 6 characters ka hona chahiye.");
+      const credential=await createUserWithEmailAndPassword(auth,email,password);
+      const user=credential.user;
+      const data={
+        uid:user.uid,name,role,mobile:mobile,
+        shopName:role==="owner"?$("shopName").value.trim():"",
+        createdAt:serverTimestamp()
+      };
+      await setDoc(doc(db,"users",user.uid),data);
+      if(role==="rider"){
+        await setDoc(doc(db,"riders",user.uid),{
+          uid:user.uid,name,online:false,updatedAt:serverTimestamp()
+        });
+      }
+      say("Account created successfully!");
+    }else{
+      await signInWithEmailAndPassword(auth,email,password);
+      say("Login successful!");
+    }
+  }catch(err){say(err.message);}
 };
 
-window.login=async()=>{
- try{
-  const phone=$("loginPhone").value.trim();
-  const pass=$("loginPassword").value;
-  if(phone.replace(/\D/g,"").length<10)throw Error("Enter valid mobile number.");
-  await signInWithEmailAndPassword(auth,phoneEmail(phone),pass);
-  msg("Login successful!");
- }catch(e){msg(e.message);}
-};
+$("logout").onclick=()=>signOut(auth);
 
-window.logout=async()=>{
- try{await signOut(auth);cart=[];msg("Logged out.");}
- catch(e){msg(e.message);}
-};
-
-$("logoutBtn").onclick=window.logout;
-
-onAuthStateChanged(auth,async u=>{
- clearListeners();
- user=u;profile=null;
- if(!u){
-  showPage("welcome");
-  $("logoutBtn").classList.add("hidden");
-  $("accountLabel").textContent="Welcome";
-  return;
- }
- try{
-  const s=await getDoc(doc(db,"users",u.uid));
-  if(!s.exists())throw Error("User profile not found.");
-  profile=s.data();
-  $("logoutBtn").classList.remove("hidden");
-  $("accountLabel").textContent=profile.name+" · "+profile.role;
-  showPage(profile.role);
-  if(profile.role==="customer")startCustomer();
-  if(profile.role==="owner")startOwner();
-  if(profile.role==="rider")startRider();
- }catch(e){msg(e.message);}
+onAuthStateChanged(auth,async user=>{
+  clearListeners();
+  currentUser=user;
+  if(!user){
+    profile=null;show("authPanel",true);show("appPanel",false);
+    $("accountArea").textContent="Not logged in";
+    return;
+  }
+  try{
+    const snap=await getDoc(doc(db,"users",user.uid));
+    if(!snap.exists()) throw Error("User profile nahi mila.");
+    profile=snap.data();
+    showPanel(profile.role);
+    if(profile.role==="customer") startCustomer();
+    if(profile.role==="owner") startOwner();
+    if(profile.role==="rider") startRider();
+  }catch(err){say(err.message);}
 });
 
 /* CUSTOMER */
 function startCustomer(){
- $("buyerName").value=profile.name||"";
- $("buyerPhone").value=profile.phone||"";
- $("buyerAddress").value=profile.address||"";
+  listen(query(collection(db,"products")),snap=>{
+    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $("products").innerHTML=items.length?items.map(p=>`
+      <div class="card product">
+        ${p.photo?`<img src="${safe(p.photo)}" alt="">`:""}
+        <h3>${safe(p.name)}</h3>
+        <p>${money(p.price)} · Stock: ${Number(p.stock||0)}</p>
+        <button data-add="${safe(p.id)}" ${p.stock<=0?"disabled":""}>Add to Cart</button>
+      </div>`).join(""):"No products available yet.";
+    $("products").querySelectorAll("[data-add]").forEach(btn=>{
+      btn.onclick=()=>addToCart(items.find(p=>p.id===btn.dataset.add));
+    });
+  });
 
- watch(collection(db,"products"),snap=>{
-  productsCache=snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderProducts();
- });
-
- watch(query(collection(db,"orders"),where("customerId","==",user.uid)),snap=>{
-  const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
-  $("myOrders").innerHTML=orders.length?orders.map(orderHTML).join(""):"No orders yet.";
- });
+  listen(query(collection(db,"orders"),where("customerId","==",currentUser.uid)),snap=>{
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $("customerOrders").innerHTML=orders.length?orders.map(orderCard).join(""):"No orders yet.";
+  });
 }
-window.renderProducts=()=>{
- const term=($("search").value||"").toLowerCase();
- const list=productsCache.filter(p=>
-  (p.name||"").toLowerCase().includes(term)
- );
- $("products").innerHTML=list.map(p=>`
- <div class="product">
-  ${p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.name)}">`:""}
-  <div class="info">
-   <h3>${esc(p.name)}</h3>
-   <div class="small">${esc(p.shopName||"Local Shop")} · Stock ${p.stock}</div>
-   <div class="price">${money(p.price)}</div>
-   <button class="primary" onclick="addCart('${p.id}')" ${p.stock<=0?"disabled":""}>ADD TO CART +</button>
-  </div>
- </div>`).join("")||"No products available. Ask a shop owner to add products.";
-};
-window.addCart=id=>{
- const p=productsCache.find(x=>x.id===id);
- if(!p||p.stock<1)return msg("Out of stock.");
- if(cart.length&&cart[0].ownerId!==p.ownerId)
-  return msg("Please order from one shop at a time.");
- const old=cart.find(x=>x.id===id);
- if(old){
-  if(old.qty>=p.stock)return msg("Not enough stock.");
-  old.qty++;
- }else cart.push({...p,qty:1});
- renderCart();
-};
-window.removeCart=id=>{
- cart=cart.filter(x=>x.id!==id);
- renderCart();
-};
-function renderCart(){
- $("cart").innerHTML=cart.map(p=>`
- <div class="row">${esc(p.name)} × ${p.qty}
- <b>${money(p.price*p.qty)}</b>
- <button class="secondary" onclick="removeCart('${p.id}')">REMOVE</button></div>
- `).join("")||"Your cart is empty.";
- $("cartTotal").textContent=cart.length?"Total with ₹25 delivery fee: "+money(total()):"";
-}
-window.checkout=()=>{
- if(!cart.length)return msg("Add products first.");
- $("checkoutBox").classList.remove("hidden");
- $("finalTotal").textContent="Total: "+money(total())+" (includes ₹25 demo delivery fee)";
-};
-window.placeOrder=async()=>{
- try{
-  if(!cart.length)throw Error("Cart is empty.");
-  const name=$("buyerName").value.trim();
-  const phone=$("buyerPhone").value.trim();
-  const address=$("buyerAddress").value.trim();
-  if(!name||phone.replace(/\D/g,"").length<10||!address)
-   throw Error("Enter name, valid mobile and delivery address.");
-
-  const items=cart.map(p=>({
-   productId:p.id,name:p.name,price:p.price,qty:p.qty
-  }));
-
-  const order={
-   customerId:user.uid,
-   customerName:name,customerPhone:phone,
-   address,shopOwnerId:cart[0].ownerId,
-   shopName:cart[0].shopName||"Local Shop",
-   items,total:total(),deliveryFee:25,
-   payment:"Cash on Delivery",
-   status:"New",riderId:null,
-   customerLocation:customerLocation,
-   createdAt:serverTimestamp()
-  };
-
-  await addDoc(collection(db,"orders"),order);
-  cart=[];
+function addToCart(p){
+  if(!p || p.stock<=0) return;
+  if(cart.length && cart[0].ownerId!==p.ownerId){
+    say("Ek order mein ek hi shop ke products add kar sakte ho.");
+    return;
+  }
+  const found=cart.find(x=>x.id===p.id);
+  if(found) found.qty++;
+  else cart.push({...p,qty:1});
   renderCart();
-  $("checkoutBox").classList.add("hidden");
-  msg("Order placed successfully! Your shop will receive it.");
- }catch(e){msg(e.message);}
+}
+function renderCart(){
+  $("cartItems").innerHTML=cart.length?cart.map(p=>
+    `<p>${safe(p.name)} × ${p.qty} — ${money(p.price*p.qty)}
+    <button class="secondary" data-remove="${safe(p.id)}">Remove</button></p>`
+  ).join(""):"Your cart is empty.";
+  $("cartTotal").textContent="Total: "+money(total());
+  $("cartItems").querySelectorAll("[data-remove]").forEach(b=>{
+    b.onclick=()=>{cart=cart.filter(p=>p.id!==b.dataset.remove);renderCart();};
+  });
+}
+$("placeOrder").onclick=async()=>{
+  try{
+    if(!cart.length) throw Error("Cart empty hai.");
+    const address=$("customerAddress").value.trim();
+    if(!address) throw Error("Delivery address enter karo.");
+    const shopOwnerId=cart[0].ownerId;
+    const items=cart.map(p=>({
+      productId:p.id,name:p.name,price:p.price,qty:p.qty
+    }));
+    await addDoc(collection(db,"orders"),{
+      customerId:currentUser.uid,
+      customerName:profile.name,
+      customerMobile:profile.mobile,
+      address,
+      shopOwnerId,
+      shopName:cart[0].shopName || "Local Shop",
+      items,
+      total:total(),
+      payment:"Cash on Delivery",
+      status:"New",
+      riderId:null,
+      createdAt:serverTimestamp()
+    });
+    cart=[];renderCart();
+    say("Order placed! Shop owner ko order mil gaya.");
+  }catch(err){say(err.message);}
 };
 
 /* SHOP OWNER */
 function startOwner(){
- watch(query(collection(db,"products"),where("ownerId","==",user.uid)),snap=>{
-  const list=snap.docs.map(d=>({id:d.id,...d.data()}));
-  $("myProducts").innerHTML=list.map(p=>`
-   <div class="product">
-    ${p.photo?`<img src="${esc(p.photo)}" alt="">`:""}
-    <div class="info"><h3>${esc(p.name)}</h3>
-    <p class="price">${money(p.price)}</p>
-    <p class="small">Stock: ${p.stock}</p>
-    <button class="danger" onclick="deleteProduct('${p.id}')">DELETE</button></div>
-   </div>`).join("")||"Add your first product.";
- });
-
- watch(query(collection(db,"orders"),where("shopOwnerId","==",user.uid)),snap=>{
-  const list=snap.docs.map(d=>({id:d.id,...d.data()}));
-  $("ownerOrders").innerHTML=list.map(o=>`
-   <div class="panel">
-    ${orderHTML(o)}
-    ${o.status==="New"?`
-     <button class="primary" onclick="acceptOrder('${o.id}')">ACCEPT & ASSIGN RIDER</button>
-     <button class="danger" onclick="rejectOrder('${o.id}')">REJECT</button>`:""}
-   </div>`).join("")||"No incoming orders.";
- });
+  listen(query(collection(db,"products"),where("ownerId","==",currentUser.uid)),snap=>{
+    const products=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $("ownerProducts").innerHTML=products.length?products.map(p=>
+      `<p>${safe(p.name)} — ${money(p.price)} — Stock ${p.stock}</p>`
+    ).join(""):"Abhi koi product add nahi kiya.";
+  });
+  listen(query(collection(db,"orders"),where("shopOwnerId","==",currentUser.uid)),snap=>{
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $("ownerOrders").innerHTML=orders.length?orders.map(o=>`
+      <div class="card">
+        ${orderCard(o)}
+        ${o.status==="New"?`<button data-accept="${o.id}">Accept Order & Assign Rider</button>
+        <button class="danger" data-reject="${o.id}">Reject</button>`:""}
+      </div>`).join(""):"No incoming orders.";
+    $("ownerOrders").querySelectorAll("[data-accept]").forEach(b=>
+      b.onclick=()=>acceptOrder(b.dataset.accept));
+    $("ownerOrders").querySelectorAll("[data-reject]").forEach(b=>
+      b.onclick=()=>rejectOrder(b.dataset.reject));
+  });
 }
-window.addProduct=async()=>{
- try{
-  const name=$("pname").value.trim();
-  const price=Number($("pprice").value);
-  const stock=Number($("stock").value);
-  const file=$("photo").files[0];
-  if(!name||!Number.isFinite(price)||price<=0||!Number.isInteger(stock)||stock<0)
-   throw Error("Enter valid product name, price and stock.");
-  if(file&&file.size>5*1024*1024)throw Error("Photo must be under 5 MB.");
-
-  let photo="";
-  if(file){
-   if(!file.type.startsWith("image/"))throw Error("Select an image.");
-   const path=ref(storage,`products/${user.uid}/${Date.now()}_${file.name}`);
-   await uploadBytes(path,file);
-   photo=await getDownloadURL(path);
-  }
-
-  await addDoc(collection(db,"products"),{
-   name,price,stock,photo,
-   ownerId:user.uid,
-   shopName:profile.shop||profile.name,
-   createdAt:serverTimestamp()
-  });
-
-  $("pname").value="";$("pprice").value="";
-  $("stock").value="";$("photo").value="";
-  msg("Product added successfully!");
- }catch(e){msg(e.message);}
-};
-window.deleteProduct=async id=>{
- try{await deleteDoc(doc(db,"products",id));msg("Product deleted.");}
- catch(e){msg(e.message);}
+$("addProduct").onclick=async()=>{
+  try{
+    const name=$("pName").value.trim();
+    const price=Number($("pPrice").value);
+    const stock=Number($("pStock").value);
+    const file=$("pPhoto").files[0];
+    if(!name||price<=0||stock<0||!Number.isFinite(price)||!Number.isFinite(stock))
+      throw Error("Product details sahi bharo.");
+    let photo="";
+    if(file){
+      const path=ref(storage,`products/${currentUser.uid}/${Date.now()}_${file.name}`);
+      await uploadBytes(path,file);
+      photo=await getDownloadURL(path);
+    }
+    await addDoc(collection(db,"products"),{
+      name,price,stock,photo,
+      ownerId:currentUser.uid,
+      shopName:profile.shopName || profile.name,
+      createdAt:serverTimestamp()
+    });
+    $("pName").value="";$("pPrice").value="";$("pStock").value="";
+    $("pPhoto").value="";
+    say("Product added!");
+  }catch(err){say(err.message);}
 };
 
-function distance(a,b){
- const rad=x=>x*Math.PI/180;
- const dLat=rad(a.lat-b.lat),dLng=rad(a.lng-b.lng);
- const x=Math.sin(dLat/2)**2+
- Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
- return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+async function acceptOrder(orderId){
+  try{
+    const ridersSnap=await getDocs(query(collection(db,"riders"),where("online","==",true)));
+    if(ridersSnap.empty) throw Error("Koi delivery boy online nahi hai. Rider ke online hone ke baad dobara try karo.");
+    const available=ridersSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const rider=available[0];
+    await updateDoc(doc(db,"orders",orderId),{
+      status:"Accepted",
+      riderId:rider.uid,
+      riderName:rider.name,
+      updatedAt:serverTimestamp()
+    });
+    say("Order accepted and assigned to "+rider.name);
+  }catch(err){say(err.message);}
 }
-
-window.acceptOrder=async id=>{
- try{
-  const orderSnap=await getDoc(doc(db,"orders",id));
-  if(!orderSnap.exists())throw Error("Order not found.");
-  if(orderSnap.data().status!=="New")throw Error("Order already processed.");
-
-  const riders=await getDocs(query(collection(db,"riders"),where("online","==",true)));
-  if(riders.empty)throw Error("No delivery partner is online.");
-
-  const shopSnap=await getDoc(doc(db,"shops",user.uid));
-  const shopLoc=shopSnap.exists()?shopSnap.data().location:null;
-  const available=riders.docs.map(d=>({id:d.id,...d.data()}));
-
-  if(shopLoc&&shopLoc.lat!=null&&shopLoc.lng!=null){
-   available.sort((a,b)=>{
-    if(!a.location)return 1;
-    if(!b.location)return -1;
-    return distance(shopLoc,a.location)-distance(shopLoc,b.location);
-   });
-  }
-
-  const rider=available[0];
-  await updateDoc(doc(db,"orders",id),{
-   status:"Accepted",
-   riderId:rider.uid,
-   riderName:rider.name,
-   updatedAt:serverTimestamp()
-  });
-  msg("Order accepted. Assigned to "+rider.name);
- }catch(e){msg(e.message);}
-};
-window.rejectOrder=async id=>{
- try{
-  await updateDoc(doc(db,"orders",id),{
-   status:"Rejected",updatedAt:serverTimestamp()
-  });
-  msg("Order rejected.");
- }catch(e){msg(e.message);}
-};
+async function rejectOrder(id){
+  try{
+    await updateDoc(doc(db,"orders",id),{
+      status:"Rejected",updatedAt:serverTimestamp()
+    });
+    say("Order rejected.");
+  }catch(err){say(err.message);}
+}
 
 /* DELIVERY PARTNER */
 function startRider(){
- watch(doc(db,"riders",user.uid),snap=>{
-  riderOnline=snap.exists()&&snap.data().online===true;
-  $("onlineStatus").textContent=riderOnline?"ONLINE":"OFFLINE";
- });
-
- watch(query(collection(db,"orders"),where("riderId","==",user.uid)),snap=>{
-  const list=snap.docs.map(d=>({id:d.id,...d.data()}));
-  $("riderOrders").innerHTML=list.map(o=>`
-   <div class="panel">
-    ${orderHTML(o)}
-    ${o.status==="Accepted"?`<button class="primary" onclick="riderUpdate('${o.id}','Picked Up')">PICKED UP</button>`:""}
-    ${o.status==="Picked Up"?`<button class="primary" onclick="riderUpdate('${o.id}','Delivered')">DELIVERED / CASH COLLECTED</button>`:""}
-   </div>`).join("")||"No assigned orders yet.";
- });
+  listen(doc(db,"riders",currentUser.uid),snap=>{
+    isOnline=snap.exists() && !!snap.data().online;
+    $("availabilityText").textContent="Availability: "+(isOnline?"Online":"Offline");
+    $("availabilityBtn").textContent=isOnline?"Go Offline":"Go Online";
+  });
+  listen(query(collection(db,"orders"),where("riderId","==",currentUser.uid)),snap=>{
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $("riderOrders").innerHTML=orders.length?orders.map(o=>`
+      <div class="card">
+        ${orderCard(o)}
+        ${o.status==="Accepted"?`<button data-pick="${o.id}">Mark Picked Up</button>`:""}
+        ${o.status==="Picked Up"?`<button data-deliver="${o.id}">Mark Delivered & Cash Collected</button>`:""}
+      </div>`).join(""):"No assigned orders.";
+    $("riderOrders").querySelectorAll("[data-pick]").forEach(b=>
+      b.onclick=()=>riderUpdate(b.dataset.pick,"Picked Up"));
+    $("riderOrders").querySelectorAll("[data-deliver]").forEach(b=>
+      b.onclick=()=>riderUpdate(b.dataset.deliver,"Delivered"));
+  });
 }
-window.setOnline=async value=>{
- try{
-  const location=await getLocation();
-  await updateDoc(doc(db,"riders",user.uid),{
-   online:value,location:location||null,updatedAt:serverTimestamp()
-  });
-  msg(value?"You are online!":"You are offline.");
- }catch(e){msg(e.message);}
+$("availabilityBtn").onclick=async()=>{
+  try{
+    await updateDoc(doc(db,"riders",currentUser.uid),{
+      online:!isOnline,updatedAt:serverTimestamp()
+    });
+    say(isOnline?"You are offline.":"You are online and available.");
+  }catch(err){say(err.message);}
 };
-window.riderUpdate=async(id,status)=>{
- try{
-  await updateDoc(doc(db,"orders",id),{
-   status,updatedAt:serverTimestamp(),
-   ...(status==="Delivered"?{cashCollected:true}:{})
-  });
-  msg("Delivery status updated: "+status);
- }catch(e){msg(e.message);}
-};
+async function riderUpdate(id,status){
+  try{
+    await updateDoc(doc(db,"orders",id),{
+      status,updatedAt:serverTimestamp(),
+      ...(status==="Delivered"?{cashCollected:true}:{})
+    });
+    say("Order status updated: "+status);
+  }catch(err){say(err.message);}
+}
 
-/* SHARED ORDER CARD */
-function orderHTML(o){
- const date=o.createdAt?.toDate?o.createdAt.toDate().toLocaleString():"Just now";
- return `
- <h3>Order #${esc(o.id.slice(0,7).toUpperCase())}</h3>
- <p>${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}</p>
- <p><b>Total: ${money(o.total)}</b> · ${esc(o.payment)}</p>
- <p>Customer: ${esc(o.customerName||"Customer")}</p>
- <p>Phone: ${esc(o.customerPhone||"")}</p>
- <p>Address: ${esc(o.address)}</p>
- <p>Status: <span class="status">${esc(o.status)}</span></p>
- ${o.riderName?`<p>Delivery Boy: ${esc(o.riderName)}</p>`:""}
- <small>${date}</small>`;
+/* SHARED ORDER DISPLAY */
+function orderCard(o){
+  const date=o.createdAt?.toDate?o.createdAt.toDate().toLocaleString():"Just now";
+  return `<h3>Order #${safe(o.id.slice(0,7).toUpperCase())}</h3>
+    <p>${(o.items||[]).map(i=>safe(i.name)+" × "+i.qty).join(", ")}</p>
+    <p><b>Total: ${money(o.total)}</b> · ${safe(o.payment)}</p>
+    <p>Address: ${safe(o.address)}</p>
+    <p>Status: <span class="tag">${safe(o.status)}</span></p>
+    ${o.riderName?`<p>Delivery Boy: ${safe(o.riderName)}</p>`:""}
+    <small>${date}</small>`;
 }
 </script>
 </body>
