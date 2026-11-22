@@ -235,24 +235,60 @@ $("authForm").onsubmit=async e=>{
 
 $("logout").onclick=()=>signOut(auth);
 
-onAuthStateChanged(auth,async user=>{
+
+onAuthStateChanged(auth, async (u) => {
   clearListeners();
-  currentUser=user;
-  if(!user){
-    profile=null;show("authPanel",true);show("appPanel",false);
-    $("accountArea").textContent="Not logged in";
+  user = u;
+  profile = null;
+
+  if (!u) {
+    showPage("welcome");
+    $("logoutBtn").classList.add("hidden");
+    $("accountLabel").textContent = "Welcome";
     return;
   }
-  try{
-    const snap=await getDoc(doc(db,"users",user.uid));
-    if(!snap.exists()) throw Error("User profile nahi mila.");
-    profile=snap.data();
-    showPanel(profile.role);
-    if(profile.role==="customer") startCustomer();
-    if(profile.role==="owner") startOwner();
-    if(profile.role==="rider") startRider();
-  }catch(err){say(err.message);}
+
+  try {
+    const profileSnap = await getDoc(
+      doc(db, "users", u.uid)
+    );
+
+    if (!profileSnap.exists()) {
+      msg("Account login successful, but profile not found. Please complete registration.");
+      showPage("register");
+      return;
+    }
+
+    profile = profileSnap.data();
+
+    $("logoutBtn").classList.remove("hidden");
+    $("accountLabel").textContent =
+      profile.name + " · " + profile.role;
+
+    if (profile.role === "customer") {
+      showPage("customer");
+      startCustomer();
+    } 
+    else if (profile.role === "owner") {
+      showPage("owner");
+      startOwner();
+    } 
+    else if (profile.role === "rider") {
+      showPage("rider");
+      startRider();
+    } 
+    else {
+      throw Error("Invalid account role: " + profile.role);
+    }
+
+    msg("Welcome back, " + profile.name + "!");
+
+  } catch (error) {
+    msg("Dashboard error: " + error.message);
+    console.error(error);
+  }
 });
+
 
 /* CUSTOMER */
 function startCustomer(){
